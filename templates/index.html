@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaiTiemPhoto - Mini Photo Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #fa7ba8 0%, #ffcccc 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #fa7ba8, #ffcccc);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            padding: 30px;
+        }
+        
+        .controls {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 25px;
+            height: fit-content;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+        
+        .file-input {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        .file-input input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-input-label {
+            display: block;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #ffff33, #ffffa8);
+            color: white;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+        
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .slider-container {
+            margin-top: 10px;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e2e8f0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffff33, #ffffa8);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffff33, #ffffa8);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        
+        .value-display {
+            display: inline-block;
+            background: #374151;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #374151;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .preview-section {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid #e2e8f0;
+            min-height: 500px;
+        }
+        
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .preview-header h3 {
+            color: #374151;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #ffff33, #ffffa8);
+            color: black;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+        }
+        
+        .preview-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            background: white;
+            border-radius: 10px;
+            border: 2px dashed #cbd5e1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .preview-container.has-image {
+            border: 2px solid #e2e8f0;
+        }
+        
+        .preview-placeholder {
+            text-align: center;
+            color: #64748b;
+        }
+        
+        .preview-placeholder i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #cbd5e1;
+        }
+        
+        .preview-image {
+            max-width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .loading {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .file-info {
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #475569;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+        
+        .hidden-params {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📸 Cái chỗ Photo Editor</h1>
+            <p>Mini Photo Editor - Chỉnh sửa ảnh by ht</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="controls">
+                <div class="control-group">
+                    <label>Chọn ảnh</label>
+                    <div class="file-input">
+                        <input type="file" id="imageInput" accept="image/*">
+                        <label for="imageInput" class="file-input-label">
+                            📁 Chọn ảnh từ máy tính
+                        </label>
+                    </div>
+                    <div class="file-info" id="fileInfo"></div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="methodSelect">Chọn chức năng</label>
+                    <select id="methodSelect">
+                        <optgroup label="🌫️ Làm mờ">
+                            <option value="blur">Blur (Box)</option>
+                            <option value="gaussian">Gaussian Blur</option>
+                            <option value="median">Median Blur</option>
+                        </optgroup>
+                        <optgroup label="✨ Làm sắc nét">
+                            <option value="sharpen">Sharpen</option>
+                        </optgroup>
+                        <optgroup label="🔍 Phát hiện cạnh">
+                            <option value="sobel">Sobel</option>
+                            <option value="laplacian">Laplacian</option>
+                            <option value="canny">Canny</option>
+                        </optgroup>
+                    </select>
+                </div>
+                
+                <div class="control-group blur-params">
+                    <label>Kernel size (lẻ) <span class="value-display" id="ksizeValue">5</span></label>
+                    <div class="slider-container">
+                        <input type="range" id="ksizeSlider" class="slider" min="1" max="21" step="2" value="5">
+                    </div>
+                </div>
+                
+                <div class="control-group gaussian-params hidden-params">
+                    <label for="sigmaInput">Sigma (cho Gaussian)</label>
+                    <input type="number" id="sigmaInput" value="1" min="0.1" max="10" step="0.1">
+                </div>
+                
+                <div class="control-group canny-params hidden-params">
+                    <label>Threshold 1 (Canny) <span class="value-display" id="th1Value">100</span></label>
+                    <div class="slider-container">
+                        <input type="range" id="th1Slider" class="slider" min="0" max="300" value="100">
+                    </div>
+                </div>
+                
+                <div class="control-group canny-params hidden-params">
+                    <label>Threshold 2 (Canny) <span class="value-display" id="th2Value">200</span></label>
+                    <div class="slider-container">
+                        <input type="range" id="th2Slider" class="slider" min="0" max="300" value="200">
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="applyBtn" disabled>Áp dụng</button>
+                    <button class="btn btn-secondary" id="resetBtn">Reset</button>
+                </div>
+                
+                <p style="font-size: 0.85rem; color: #6b7280; margin-top: 15px; text-align: center;">
+                    Bạn có thể tải ảnh kết quả bằng nút "Tải về".
+                </p>
+            </div>
+            
+            <div class="preview-section">
+                <div class="preview-header">
+                    <h3>Preview</h3>
+                    <button class="download-btn" id="downloadBtn">📥 Tải về</button>
+                </div>
+                <div class="preview-container" id="previewContainer">
+                    <div class="preview-placeholder">
+                        <div style="font-size: 3rem; margin-bottom: 15px;">📷</div>
+                        <h4>Preview kết quả</h4>
+                        <p>Chọn ảnh và nhấn "Áp dụng" để xem kết quả</p>
+                    </div>
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <p>Đang xử lý...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // DOM elements
+        const imageInput = document.getElementById('imageInput');
+        const methodSelect = document.getElementById('methodSelect');
+        const ksizeSlider = document.getElementById('ksizeSlider');
+        const ksizeValue = document.getElementById('ksizeValue');
+        const sigmaInput = document.getElementById('sigmaInput');
+        const th1Slider = document.getElementById('th1Slider');
+        const th1Value = document.getElementById('th1Value');
+        const th2Slider = document.getElementById('th2Slider');
+        const th2Value = document.getElementById('th2Value');
+        const applyBtn = document.getElementById('applyBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const previewContainer = document.getElementById('previewContainer');
+        const loading = document.getElementById('loading');
+        const fileInfo = document.getElementById('fileInfo');
+        
+        let selectedFile = null;
+        let processedImageUrl = null;
+        
+        // Event listeners
+        imageInput.addEventListener('change', handleFileSelect);
+        methodSelect.addEventListener('change', updateParameterVisibility);
+        ksizeSlider.addEventListener('input', () => {
+            ksizeValue.textContent = ksizeSlider.value;
+        });
+        th1Slider.addEventListener('input', () => {
+            th1Value.textContent = th1Slider.value;
+        });
+        th2Slider.addEventListener('input', () => {
+            th2Value.textContent = th2Slider.value;
+        });
+        applyBtn.addEventListener('click', processImage);
+        resetBtn.addEventListener('click', resetAll);
+        downloadBtn.addEventListener('click', downloadImage);
+        
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                
+                // Hiển thị thông tin file
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                fileInfo.innerHTML = `
+                    <strong>📄 ${file.name}</strong><br>
+                    📏 Kích thước: ${fileSize} MB<br>
+                    🖼️ Định dạng: ${file.type}
+                `;
+                fileInfo.style.display = 'block';
+                
+                // Enable apply button
+                applyBtn.disabled = false;
+                
+                // Hiển thị ảnh gốc
+                showOriginalImage(file);
+            }
+        }
+        
+        function showOriginalImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewContainer.innerHTML = `
+                    <img src="${e.target.result}" alt="Original Image" class="preview-image">
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <p>Đang xử lý...</p>
+                    </div>
+                `;
+                previewContainer.classList.add('has-image');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function updateParameterVisibility() {
+            const method = methodSelect.value;
+            
+            // Ẩn tất cả parameters
+            document.querySelectorAll('.blur-params, .gaussian-params, .canny-params').forEach(el => {
+                el.classList.add('hidden-params');
+            });
+            
+            // Hiển thị parameters cần thiết
+            if (['blur', 'gaussian', 'median'].includes(method)) {
+                document.querySelector('.blur-params').classList.remove('hidden-params');
+                if (method === 'gaussian') {
+                    document.querySelector('.gaussian-params').classList.remove('hidden-params');
+                }
+            } else if (method === 'canny') {
+                document.querySelectorAll('.canny-params').forEach(el => {
+                    el.classList.remove('hidden-params');
+                });
+            }
+        }
+        
+        async function processImage() {
+            if (!selectedFile) {
+                alert('Vui lòng chọn ảnh trước!');
+                return;
+            }
+            
+            // Hiển thị loading
+            loading.style.display = 'block';
+            applyBtn.disabled = true;
+            applyBtn.textContent = 'Đang xử lý...';
+            
+            // Chuẩn bị form data
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('method', methodSelect.value);
+            formData.append('ksize', ksizeSlider.value);
+            formData.append('sigma', sigmaInput.value);
+            formData.append('th1', th1Slider.value);
+            formData.append('th2', th2Slider.value);
+            
+            try {
+                const response = await fetch('/process', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    processedImageUrl = URL.createObjectURL(blob);
+                    
+                    // Hiển thị ảnh kết quả
+                    previewContainer.innerHTML = `
+                        <img src="${processedImageUrl}" alt="Processed Image" class="preview-image">
+                        <div class="loading" id="loading" style="display: none;">
+                            <div class="spinner"></div>
+                            <p>Đang xử lý...</p>
+                        </div>
+                    `;
+                    
+                    // Hiển thị nút download
+                    downloadBtn.style.display = 'block';
+                } else {
+                    const errorData = await response.json();
+                    alert(`Lỗi xử lý: ${errorData.error}`);
+                }
+            } catch (error) {
+                alert(`Lỗi kết nối: ${error.message}`);
+                console.error('Error:', error);
+            } finally {
+                loading.style.display = 'none';
+                applyBtn.disabled = false;
+                applyBtn.textContent = 'Áp dụng';
+            }
+        }
+        
+        function resetAll() {
+            // Reset form
+            imageInput.value = '';
+            methodSelect.value = 'blur';
+            ksizeSlider.value = 5;
+            ksizeValue.textContent = '5';
+            sigmaInput.value = 1;
+            th1Slider.value = 100;
+            th1Value.textContent = '100';
+            th2Slider.value = 200;
+            th2Value.textContent = '200';
+            
+            // Reset variables
+            selectedFile = null;
+            if (processedImageUrl) {
+                URL.revokeObjectURL(processedImageUrl);
+                processedImageUrl = null;
+            }
+            
+            // Reset UI
+            previewContainer.innerHTML = `
+                <div class="preview-placeholder">
+                    <div style="font-size: 3rem; margin-bottom: 15px;">📷</div>
+                    <h4>Preview kết quả</h4>
+                    <p>Chọn ảnh và nhấn "Áp dụng" để xem kết quả</p>
+                </div>
+            `;
+            previewContainer.classList.remove('has-image');
+            downloadBtn.style.display = 'none';
+            applyBtn.disabled = true;
+            fileInfo.style.display = 'none';
+            
+            updateParameterVisibility();
+        }
+        
+        function downloadImage() {
+            if (processedImageUrl) {
+                const a = document.createElement('a');
+                a.href = processedImageUrl;
+                a.download = `caitiemphoto_processed_${Date.now()}.jpg`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        }
+        
+        // Initialize
+        updateParameterVisibility();
+    </script>
+</body>
+</html>
