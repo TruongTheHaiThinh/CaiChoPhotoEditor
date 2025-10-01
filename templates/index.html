@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CaiTiemPhoto - Mini Photo Editor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -19,13 +20,12 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
-            backdrop-filter: blur(10px);
         }
         
         .header {
@@ -70,7 +70,7 @@
         
         .main-content {
             display: grid;
-            grid-template-columns: 1fr 2fr;
+            grid-template-columns: 300px 1fr;
             gap: 30px;
             padding: 30px;
         }
@@ -114,7 +114,7 @@
             display: block;
             padding: 15px 20px;
             background: linear-gradient(135deg, #ffff33, #ffffa8);
-            color: white;
+            color: #333;
             border-radius: 10px;
             text-align: center;
             cursor: pointer;
@@ -124,7 +124,7 @@
         
         .file-input-label:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 10px 25px rgba(255, 255, 51, 0.3);
         }
         
         select {
@@ -238,48 +238,37 @@
         }
         
         .preview-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .image-box {
             background: #f8fafc;
             border-radius: 15px;
-            padding: 25px;
+            padding: 20px;
             border: 1px solid #e2e8f0;
-            min-height: 500px;
         }
         
-        .preview-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .preview-header h3 {
+        .image-box h3 {
             color: #374151;
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
         }
         
-        .download-btn {
-            background: linear-gradient(135deg, #ffff33, #ffffa8);
-            color: black;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: none;
-        }
-        
-        .download-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
-        }
-        
-        .preview-container {
+        .image-wrapper {
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 400px;
+            min-height: 300px;
             background: white;
             border-radius: 10px;
             border: 2px dashed #cbd5e1;
@@ -287,7 +276,7 @@
             overflow: hidden;
         }
         
-        .preview-container.has-image {
+        .image-wrapper.has-image {
             border: 2px solid #e2e8f0;
         }
         
@@ -296,18 +285,11 @@
             color: #64748b;
         }
         
-        .preview-placeholder i {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            color: #cbd5e1;
-        }
-        
         .preview-image {
             max-width: 100%;
-            max-height: 400px;
+            max-height: 300px;
             object-fit: contain;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         
         .loading {
@@ -317,6 +299,10 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
+            background: rgba(255,255,255,0.95);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 10;
         }
         
         .spinner {
@@ -334,6 +320,61 @@
             100% { transform: rotate(360deg); }
         }
         
+        .histogram-container {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            display: none;
+        }
+        
+        .histogram-container h3 {
+            color: #374151;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .histogram-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .histogram-box {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .histogram-box h4 {
+            font-size: 1rem;
+            color: #475569;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+            margin: 0 auto;
+            font-size: 1rem;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+        }
+        
         .file-info {
             background: #f1f5f9;
             padding: 10px;
@@ -344,15 +385,17 @@
             display: none;
         }
         
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
             .main-content {
                 grid-template-columns: 1fr;
-                gap: 20px;
-                padding: 20px;
             }
             
-            .header h1 {
-                font-size: 2rem;
+            .comparison-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .histogram-grid {
+                grid-template-columns: 1fr;
             }
         }
         
@@ -430,34 +473,55 @@
                     <button class="btn btn-primary" id="applyBtn" disabled>Áp dụng</button>
                     <button class="btn btn-secondary" id="resetBtn">Reset</button>
                 </div>
-                
-                <p style="font-size: 0.85rem; color: #6b7280; margin-top: 15px; text-align: center;">
-                    Bạn có thể tải ảnh kết quả bằng nút "Tải về".
-                </p>
             </div>
             
             <div class="preview-section">
-                <div class="preview-header">
-                    <h3>Preview</h3>
-                    <button class="download-btn" id="downloadBtn">📥 Tải về</button>
-                </div>
-                <div class="preview-container" id="previewContainer">
-                    <div class="preview-placeholder">
-                        <div style="font-size: 3rem; margin-bottom: 15px;">📷</div>
-                        <h4>Preview kết quả</h4>
-                        <p>Chọn ảnh và nhấn "Áp dụng" để xem kết quả</p>
+                <div class="comparison-container">
+                    <div class="image-box">
+                        <h3>🖼️ Ảnh gốc</h3>
+                        <div class="image-wrapper" id="originalContainer">
+                            <div class="preview-placeholder">
+                                <div style="font-size: 3rem; margin-bottom: 15px;">📷</div>
+                                <p>Chọn ảnh để xem</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="loading" id="loading">
-                        <div class="spinner"></div>
-                        <p>Đang xử lý...</p>
+                    
+                    <div class="image-box">
+                        <h3>✨ Ảnh đã xử lý</h3>
+                        <div class="image-wrapper" id="processedContainer">
+                            <div class="preview-placeholder">
+                                <div style="font-size: 3rem; margin-bottom: 15px;">🎨</div>
+                                <p>Nhấn "Áp dụng" để xử lý</p>
+                            </div>
+                            <div class="loading" id="loading">
+                                <div class="spinner"></div>
+                                <p>Đang xử lý...</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                
+                <div class="histogram-container" id="histogramSection">
+                    <h3>📊 Biểu đồ Histogram</h3>
+                    <div class="histogram-grid">
+                        <div class="histogram-box">
+                            <h4>Ảnh gốc</h4>
+                            <canvas id="originalHistogram"></canvas>
+                        </div>
+                        <div class="histogram-box">
+                            <h4>Ảnh đã xử lý</h4>
+                            <canvas id="processedHistogram"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="download-btn" id="downloadBtn">📥 Tải ảnh đã xử lý</button>
             </div>
         </div>
     </div>
     
     <script>
-        // DOM elements
         const imageInput = document.getElementById('imageInput');
         const methodSelect = document.getElementById('methodSelect');
         const ksizeSlider = document.getElementById('ksizeSlider');
@@ -470,14 +534,17 @@
         const applyBtn = document.getElementById('applyBtn');
         const resetBtn = document.getElementById('resetBtn');
         const downloadBtn = document.getElementById('downloadBtn');
-        const previewContainer = document.getElementById('previewContainer');
+        const originalContainer = document.getElementById('originalContainer');
+        const processedContainer = document.getElementById('processedContainer');
         const loading = document.getElementById('loading');
         const fileInfo = document.getElementById('fileInfo');
+        const histogramSection = document.getElementById('histogramSection');
         
         let selectedFile = null;
         let processedImageUrl = null;
+        let originalChart = null;
+        let processedChart = null;
         
-        // Event listeners
         imageInput.addEventListener('change', handleFileSelect);
         methodSelect.addEventListener('change', updateParameterVisibility);
         ksizeSlider.addEventListener('input', () => {
@@ -498,7 +565,6 @@
             if (file) {
                 selectedFile = file;
                 
-                // Hiển thị thông tin file
                 const fileSize = (file.size / 1024 / 1024).toFixed(2);
                 fileInfo.innerHTML = `
                     <strong>📄 ${file.name}</strong><br>
@@ -507,10 +573,8 @@
                 `;
                 fileInfo.style.display = 'block';
                 
-                // Enable apply button
                 applyBtn.disabled = false;
                 
-                // Hiển thị ảnh gốc
                 showOriginalImage(file);
             }
         }
@@ -518,14 +582,8 @@
         function showOriginalImage(file) {
             const reader = new FileReader();
             reader.onload = (e) => {
-                previewContainer.innerHTML = `
-                    <img src="${e.target.result}" alt="Original Image" class="preview-image">
-                    <div class="loading" id="loading">
-                        <div class="spinner"></div>
-                        <p>Đang xử lý...</p>
-                    </div>
-                `;
-                previewContainer.classList.add('has-image');
+                originalContainer.innerHTML = `<img src="${e.target.result}" alt="Original Image" class="preview-image">`;
+                originalContainer.classList.add('has-image');
             };
             reader.readAsDataURL(file);
         }
@@ -533,12 +591,10 @@
         function updateParameterVisibility() {
             const method = methodSelect.value;
             
-            // Ẩn tất cả parameters
             document.querySelectorAll('.blur-params, .gaussian-params, .canny-params').forEach(el => {
                 el.classList.add('hidden-params');
             });
             
-            // Hiển thị parameters cần thiết
             if (['blur', 'gaussian', 'median'].includes(method)) {
                 document.querySelector('.blur-params').classList.remove('hidden-params');
                 if (method === 'gaussian') {
@@ -557,12 +613,10 @@
                 return;
             }
             
-            // Hiển thị loading
             loading.style.display = 'block';
             applyBtn.disabled = true;
             applyBtn.textContent = 'Đang xử lý...';
             
-            // Chuẩn bị form data
             const formData = new FormData();
             formData.append('file', selectedFile);
             formData.append('method', methodSelect.value);
@@ -578,19 +632,21 @@
                 });
                 
                 if (response.ok) {
-                    const blob = await response.blob();
-                    processedImageUrl = URL.createObjectURL(blob);
+                    const data = await response.json();
                     
-                    // Hiển thị ảnh kết quả
-                    previewContainer.innerHTML = `
+                    processedImageUrl = data.processed_image;
+                    processedContainer.innerHTML = `
                         <img src="${processedImageUrl}" alt="Processed Image" class="preview-image">
                         <div class="loading" id="loading" style="display: none;">
                             <div class="spinner"></div>
                             <p>Đang xử lý...</p>
                         </div>
                     `;
+                    processedContainer.classList.add('has-image');
                     
-                    // Hiển thị nút download
+                    drawHistograms(data.original_histogram, data.processed_histogram);
+                    
+                    histogramSection.style.display = 'block';
                     downloadBtn.style.display = 'block';
                 } else {
                     const errorData = await response.json();
@@ -606,8 +662,96 @@
             }
         }
         
+        function drawHistograms(originalHist, processedHist) {
+            const labels = Array.from({length: 256}, (_, i) => i);
+            
+            if (originalChart) {
+                originalChart.destroy();
+            }
+            if (processedChart) {
+                processedChart.destroy();
+            }
+            
+            const chartConfig = (histData, title) => ({
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Blue',
+                            data: histData.blue,
+                            borderColor: 'rgba(59, 130, 246, 0.8)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 1,
+                            pointRadius: 0,
+                            fill: true
+                        },
+                        {
+                            label: 'Green',
+                            data: histData.green,
+                            borderColor: 'rgba(34, 197, 94, 0.8)',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            borderWidth: 1,
+                            pointRadius: 0,
+                            fill: true
+                        },
+                        {
+                            label: 'Red',
+                            data: histData.red,
+                            borderColor: 'rgba(239, 68, 68, 0.8)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderWidth: 1,
+                            pointRadius: 0,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Giá trị pixel (0-255)'
+                            },
+                            ticks: {
+                                maxTicksLimit: 10
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Tần suất'
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+            
+            const originalCtx = document.getElementById('originalHistogram').getContext('2d');
+            originalChart = new Chart(originalCtx, chartConfig(originalHist, 'Ảnh gốc'));
+            
+            const processedCtx = document.getElementById('processedHistogram').getContext('2d');
+            processedChart = new Chart(processedCtx, chartConfig(processedHist, 'Ảnh đã xử lý'));
+        }
+        
         function resetAll() {
-            // Reset form
             imageInput.value = '';
             methodSelect.value = 'blur';
             ksizeSlider.value = 5;
@@ -618,25 +762,42 @@
             th2Slider.value = 200;
             th2Value.textContent = '200';
             
-            // Reset variables
             selectedFile = null;
-            if (processedImageUrl) {
-                URL.revokeObjectURL(processedImageUrl);
-                processedImageUrl = null;
-            }
+            processedImageUrl = null;
             
-            // Reset UI
-            previewContainer.innerHTML = `
+            originalContainer.innerHTML = `
                 <div class="preview-placeholder">
                     <div style="font-size: 3rem; margin-bottom: 15px;">📷</div>
-                    <h4>Preview kết quả</h4>
-                    <p>Chọn ảnh và nhấn "Áp dụng" để xem kết quả</p>
+                    <p>Chọn ảnh để xem</p>
                 </div>
             `;
-            previewContainer.classList.remove('has-image');
+            originalContainer.classList.remove('has-image');
+            
+            processedContainer.innerHTML = `
+                <div class="preview-placeholder">
+                    <div style="font-size: 3rem; margin-bottom: 15px;">🎨</div>
+                    <p>Nhấn "Áp dụng" để xử lý</p>
+                </div>
+                <div class="loading" id="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Đang xử lý...</p>
+                </div>
+            `;
+            processedContainer.classList.remove('has-image');
+            
+            histogramSection.style.display = 'none';
             downloadBtn.style.display = 'none';
             applyBtn.disabled = true;
             fileInfo.style.display = 'none';
+            
+            if (originalChart) {
+                originalChart.destroy();
+                originalChart = null;
+            }
+            if (processedChart) {
+                processedChart.destroy();
+                processedChart = null;
+            }
             
             updateParameterVisibility();
         }
@@ -652,7 +813,6 @@
             }
         }
         
-        // Initialize
         updateParameterVisibility();
     </script>
 </body>
